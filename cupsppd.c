@@ -996,7 +996,7 @@ PyMethodDef PPD_methods[] =
       "@type section: integer\n"
       "@param section: section id\n"
       "@type min_order: float\n"
-      "@param min_order: minumum order dependency\n"
+      "@param min_order: minimum order dependency\n"
       "@return: string containing emitted postscript" },
 
     { "emit",
@@ -1019,7 +1019,7 @@ PyMethodDef PPD_methods[] =
       "@type limit: integer\n"
       "@param limit: non-zero to use min_order\n"
       "@type min_order: float\n"
-      "@param min_order: minumum order dependency" },
+      "@param min_order: minimum order dependency" },
 
     { "emitFd",
       (PyCFunction) PPD_emitFd, METH_VARARGS,

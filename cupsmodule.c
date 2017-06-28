@@ -838,7 +838,7 @@ static PyMethodDef cups_methods[] = {
     "@param s1: first string\n"
     "@type s2: string\n"
     "@param s2: second string\n"
-    "@return: strcmp-style comparision result"},
+    "@return: strcmp-style comparison result"},
 
   { "setUser", cups_setUser, METH_VARARGS,
     "setUser(user) -> None\n\n"

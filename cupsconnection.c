@@ -5524,7 +5524,7 @@ PyMethodDef Connection_methods[] =
       "@type time_interval: integer\n"
       "@keyword time_interval: time interval\n"
       "@type user_data: string\n"
-      "@keyword user_data: user data to receieve with notifications\n"
+      "@keyword user_data: user data to receive with notifications\n"
       "@return: subscription ID\n"
       "@raise IPPError: IPP problem" },
 

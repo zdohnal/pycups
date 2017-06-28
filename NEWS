@@ -1,6 +1,10 @@
 NEWS
 ----
 
+New in 1.9.74:
+* misspelling (patch by Edward Betts)
+* fixed print function in example/cupstree.py (patch by Jiri Popelka)
+
 New in 1.9.73:
 
 * Fixed build for CUPS 1.6.3 by making several constants conditional
