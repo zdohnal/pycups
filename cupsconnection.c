@@ -2061,7 +2061,8 @@ Connection_writeRequestData (Connection *self, PyObject *args, PyObject *kwds)
 				    &buffer_obj, &length))
     return NULL;
 
-  buffer = strdup(PyBytes_AsString (buffer_obj));
+  buffer = (char *) malloc((size_t) length);
+  memcpy(buffer, PyBytes_AsString(buffer_obj), length);
   debugprintf ("-> Connection_writeRequestData(length=%d)\n", length);
 
   Connection_begin_allow_threads (self);
