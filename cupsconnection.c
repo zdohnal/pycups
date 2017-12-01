@@ -1574,6 +1574,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *result;
   ipp_t *request, *answer;
   ipp_attribute_t *attr;
+  char *name = NULL;
   char *which = NULL;
   int my_jobs = 0;
   int limit = -1;
@@ -1581,18 +1582,25 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *requested_attrs = NULL;
   char **attrs = NULL; /* initialised to calm compiler */
   size_t n_attrs = 0; /* initialised to calm compiler */
-  static char *kwlist[] = { "which_jobs", "my_jobs", "limit", "first_job_id", 
+  static char *kwlist[] = { "name", "which_jobs", "my_jobs", "limit", "first_job_id", 
 			    "requested_attributes", NULL };
-  if (!PyArg_ParseTupleAndKeywords (args, kwds, "|siiiO", kwlist,
-				    &which, &my_jobs, &limit, &first_job_id,
+  if (!PyArg_ParseTupleAndKeywords (args, kwds, "|ssiiiO", kwlist,
+				    &name, &which, &my_jobs, &limit, &first_job_id,
 				    &requested_attrs))
     return NULL;
 
   debugprintf ("-> Connection_getJobs(%s,%d)\n",
 	       which ? which : "(null)", my_jobs);
   request = ippNewRequest(IPP_GET_JOBS);
+
+  if (name == NULL) {
+    name = ""
+  }
+
+  char *printerUri = strcat("ipp://localhost/printers/", name)
+
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-		NULL, "ipp://localhost/printers/");
+		NULL, printerUri);
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD, "which-jobs",
 		NULL, which ? which : "not-completed");
