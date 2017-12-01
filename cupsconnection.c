@@ -1576,6 +1576,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   ipp_attribute_t *attr;
   char *name = NULL;
   char *which = NULL;
+  char uri[1024];
   int my_jobs = 0;
   int limit = -1;
   int first_job_id = -1;
@@ -1597,10 +1598,10 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
     name = "";
   }
 
-  char *printerUri = strcat("ipp://localhost/printers/", name);
+  snprintf (uri, sizeof (uri), "ipp://localhost/printers/%s", name);
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-		NULL, printerUri);
+		NULL, uri);
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD, "which-jobs",
 		NULL, which ? which : "not-completed");
