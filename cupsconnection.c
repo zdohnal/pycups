@@ -1594,10 +1594,10 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   request = ippNewRequest(IPP_GET_JOBS);
 
   if (name == NULL) {
-    name = ""
+    name = "";
   }
 
-  char *printerUri = strcat("ipp://localhost/printers/", name)
+  char *printerUri = strcat("ipp://localhost/printers/", name);
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
 		NULL, printerUri);
