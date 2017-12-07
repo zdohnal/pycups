@@ -479,6 +479,12 @@ do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
 
   debugprintf ("-> do_printer_request(op:%d, name:%s)\n", (int) op, name);
 
+  int full_url_length = strlen(uri) + strlen(name);
+
+  if (full_url_length > HTTP_MAX_URI) {
+    debugprintf("name too long, cutting it")
+  }
+
   request = ippNewRequest (op);
   construct_uri (uri, sizeof (uri), "ipp://localhost/printers/", name);
   free (name);
