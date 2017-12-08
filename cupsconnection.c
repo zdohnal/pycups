@@ -480,12 +480,6 @@ do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
 
   debugprintf ("-> do_printer_request(op:%d, name:%s)\n", (int) op, name);
 
-  int full_url_length = strlen(uri) + strlen(name);
-
-  if (full_url_length > HTTP_MAX_URI) {
-    debugprintf("name too long, cutting it")
-  }
-
   request = ippNewRequest (op);
   construct_uri (uri, sizeof (uri), "ipp://localhost/printers/", name);
   free (name);
@@ -1617,6 +1611,17 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   if (status != 0) {
     PyErr_SetString (PyExc_RuntimeError, "valid name must be specified");
     return NULL;
+  }
+
+    int number_to_trim = min(full_url_length - HTTP_MAX_URI, name_len);
+  int namelen = strlen(name);
+  int full_url_length = strlen(uri) + namelen;
+
+  if (full_url_length > HTTP_MAX_URI) {
+    debugprintf("name too long, cutting it")
+
+    int number_to_trim = min(full_url_length - HTTP_MAX_URI, name_len);
+    name[name_len - number_to_trim] = 0;
   }
 
   snprintf (uri, sizeof (uri), "ipp://localhost/printers/%s", name);
