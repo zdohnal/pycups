@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 #include <unistd.h>
 
 #ifndef _PATH_TMP
@@ -1580,6 +1581,8 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *result;
   ipp_t *request, *answer;
   ipp_attribute_t *attr;
+  int    status;
+  regex_t    re;
   char *name = NULL;
   char *which = NULL;
   char uri[1024];
@@ -1602,6 +1605,18 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
 
   if (name == NULL) {
     name = "";
+  }
+
+  if (regcomp(&re, "[A-Za-z0-9\-\.\_\~]+", REG_EXTENDED|REG_NOSUB) != 0) {
+      return NULL;
+  }
+
+  status = regexec(&re, name, (size_t) 0, NULL, 0);
+  regfree(&re);
+  
+  if (status != 0) {
+    PyErr_SetString (PyExc_RuntimeError, "valid name must be specified");
+    return NULL;
   }
 
   snprintf (uri, sizeof (uri), "ipp://localhost/printers/%s", name);
