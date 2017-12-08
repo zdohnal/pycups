@@ -1601,7 +1601,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
     name = "";
   }
 
-  if (regcomp(&re, "[A-Za-z0-9\-\.\_\~]+", REG_EXTENDED|REG_NOSUB) != 0) {
+  if (regcomp(&re, "[A-Za-z0-9\\-\\.\\_\\~]+", REG_EXTENDED|REG_NOSUB) != 0) {
       return NULL;
   }
 
