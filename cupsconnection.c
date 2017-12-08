@@ -1613,7 +1613,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
-    int number_to_trim = min(full_url_length - HTTP_MAX_URI, name_len);
+  int number_to_trim = min(full_url_length - HTTP_MAX_URI, name_len);
   int namelen = strlen(name);
   int full_url_length = strlen(uri) + namelen;
 
