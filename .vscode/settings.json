@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "unistd.h": "c",
-        "regex.h": "c"
-    }
-}
