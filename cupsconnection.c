@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
+ m; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
@@ -1602,19 +1602,22 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
 
   if (name == NULL) {
     name = "";
-  }
-
-  if (regcomp(&re, "[A-Za-z0-9\\-\\.\\_\\~]+", REG_EXTENDED|REG_NOSUB) != 0) {
+  } else {
+    
+    if (regcomp(&re, "[A-Za-z0-9\\-\\.\\_\\~]+", REG_EXTENDED|REG_NOSUB) != 0) {
       return NULL;
+    }
+    
+    status = regexec(&re, name, (size_t) 0, NULL, 0);
+    regfree(&re);
+    
+    if (status != 0) {
+      PyErr_SetString (PyExc_RuntimeError, "valid name must be specified");
+      return NULL;
+    }
   }
 
-  status = regexec(&re, name, (size_t) 0, NULL, 0);
-  regfree(&re);
   
-  if (status != 0) {
-    PyErr_SetString (PyExc_RuntimeError, "valid name must be specified");
-    return NULL;
-  }
 
   int name_len = strlen(name);
   int full_url_length = strlen(uri) + name_len;
