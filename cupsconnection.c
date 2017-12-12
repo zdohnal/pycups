@@ -1613,12 +1613,12 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
     return NULL;
   }
 
+  int name_len = strlen(name);
+  int full_url_length = strlen(uri) + name_len;
   int number_to_trim = min(full_url_length - HTTP_MAX_URI, name_len);
-  int namelen = strlen(name);
-  int full_url_length = strlen(uri) + namelen;
 
   if (full_url_length > HTTP_MAX_URI) {
-    debugprintf("name too long, cutting it")
+    debugprintf("name too long, cutting it");
 
     int number_to_trim = min(full_url_length - HTTP_MAX_URI, name_len);
     name[name_len - number_to_trim] = 0;
