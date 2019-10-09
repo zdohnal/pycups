@@ -4866,7 +4866,7 @@ Connection_printFiles (Connection *self, PyObject *args, PyObject *kwds)
 						   settings);
   Connection_end_allow_threads (self);
 
-  if (jobid < 0) {
+  if (jobid == 0) {
     cupsFreeOptions (num_settings, settings);
     free (title);
     free_string_list (num_filenames, filenames);
