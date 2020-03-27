@@ -3,4 +3,32 @@ CUPS bindings for Python
 
 These Python bindings are intended to wrap the CUPS API.
 
-Python 2.6 or later is required.
+Python 3 or later is required since Python 2 is unsupported since 2020-01-01.
+
+Build dependencies
+------------------
+
+The following packages are needed for compiling PyCUPS. GCC compiler is needed because modules are written
+in C. CUPS development files are needed for providing CUPS API, which are used in modules and Python3
+development files for Python3 functions called in modules.
+
+Packages needed for compilation (default package names are from Fedora, Ubuntu names are in the brackets
+if they differ from Fedora):
+
+- gcc
+- cups-devel (libcups2-dev)
+- python3-devel (python3-dev)
+
+Please install them before compiling PyCUPS.
+
+How to compile and install
+--------------------------
+
+Do the following steps in the PyCUPS directory:
+$ make
+$ sudo make install
+
+How to import cups module in python3 script
+-------------------------------------------
+
+>>> import cups
