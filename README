@@ -21,6 +21,11 @@ if they differ from Fedora):
 
 Please install them before compiling PyCUPS.
 
+Runtime dependencies
+--------------------
+
+CUPS needs to be installed and running for PyCUPS working correctly.
+
 How to compile and install
 --------------------------
 
