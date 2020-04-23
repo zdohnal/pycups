@@ -376,11 +376,7 @@ PPD_markOption (PPD *self, PyObject *args)
 static PyObject *
 PPD_conflicts (PPD *self)
 {
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (ppdConflicts (self->ppd));
-#else
-  return PyInt_FromLong (ppdConflicts (self->ppd));
-#endif
 }
 
 static PyObject *
@@ -624,12 +620,8 @@ PPD_emit (PPD *self, PyObject *args)
   if (!PyArg_ParseTuple (args, "Oi", &pyFile, &section))
     return NULL;
 
-#if PY_MAJOR_VERSION >= 3
   int fd = PyObject_AsFileDescriptor(pyFile);
   f = fdopen(fd, "w");
-#else
-  f = PyFile_AsFile(pyFile);
-#endif
   if (!f)
     return PyErr_SetFromErrno (PyExc_RuntimeError);
 
@@ -654,12 +646,8 @@ PPD_emitAfterOrder (PPD *self, PyObject *args)
   if (!PyArg_ParseTuple (args, "Oiif", &pyFile, &section, &limit, &min_order))
     return NULL;
 
-#if PY_MAJOR_VERSION >= 3
   int fd = PyObject_AsFileDescriptor(pyFile);
   f = fdopen(fd, "w");
-#else
-  f = PyFile_AsFile(pyFile);
-#endif
   if (!f)
     return PyErr_SetFromErrno (PyExc_RuntimeError);
 
@@ -712,12 +700,8 @@ PPD_emitJCL (PPD *self, PyObject *args)
     return NULL;
   }
 
-#if PY_MAJOR_VERSION >= 3
   int fd = PyObject_AsFileDescriptor(pyFile);
   f = fdopen(fd, "w");
-#else
-  f = PyFile_AsFile(pyFile);
-#endif
   if (!f)
     return PyErr_SetFromErrno (PyExc_RuntimeError);
 
@@ -742,12 +726,8 @@ PPD_emitJCLEnd (PPD *self, PyObject *args)
   if (!PyArg_ParseTuple (args, "O", &pyFile))
     return NULL;
 
-#if PY_MAJOR_VERSION >= 3
   int fd = PyObject_AsFileDescriptor(pyFile);
   f = fdopen(fd, "w");
-#else
-  f = PyFile_AsFile(pyFile);
-#endif
   if (!f)
     return PyErr_SetFromErrno (PyExc_RuntimeError);
 
@@ -1142,11 +1122,7 @@ Option_repr (Option *self)
   char buffer[256];
   snprintf (buffer, 256, "<cups.Option %s=%s>",
 			  option->keyword, option->defchoice);
-#if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString (buffer);
-#else
-    return PyBytes_FromString (buffer);
-#endif
 }
 
 ////////////
@@ -1199,11 +1175,7 @@ Option_getUI (Option *self, void *closure)
     Py_RETURN_NONE;
   }
 
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (self->option->ui);
-#else
-  return PyInt_FromLong (self->option->ui);
-#endif
 }
 
 static PyObject *
@@ -1388,11 +1360,7 @@ Group_repr (Group *self)
 
   char buffer[256];
   snprintf (buffer, 256, "<cups.Group %s>", group->name);
-#if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString (buffer);
-#else
-    return PyBytes_FromString (buffer);
-#endif
 }
 
 ///////////
@@ -1736,11 +1704,7 @@ Attribute_repr (Attribute *self)
 			  attribute->name,
 			  attribute->spec[0] != '\0' ? " ": "",
 			  attribute->spec);
-#if PY_MAJOR_VERSION >= 3
     return PyUnicode_FromString (buffer);
-#else
-    return PyBytes_FromString (buffer);
-#endif
 }
 
 ///////////////

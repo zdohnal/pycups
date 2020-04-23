@@ -195,13 +195,8 @@ cups_modelSort (PyObject *self, PyObject *args)
     PyErr_SetString (PyExc_RuntimeError, "Insufficient memory");
     return NULL;
   }
-#if PY_MAJOR_VERSION >= 3
   PyUnicode_AsWideChar (a, wca, size_a);
   PyUnicode_AsWideChar (b, wcb, size_b);
-#else
-  PyUnicode_AsWideChar ((PyUnicodeObject *) a, wca, size_a);
-  PyUnicode_AsWideChar ((PyUnicodeObject *) b, wcb, size_b);
-#endif
   Py_DECREF (a);
   Py_DECREF (b);
   return Py_BuildValue ("i", do_model_compare (wca, wcb));
@@ -587,12 +582,7 @@ struct module_state {
     PyObject *error;
 };
 
-#if PY_MAJOR_VERSION >= 3
 #define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
-#else
-#define GETSTATE(m) (&_state)
-static struct module_state _state;
-#endif
 
 
 static PyMethodDef cups_methods[] = {
@@ -730,7 +720,6 @@ static PyMethodDef cups_methods[] = {
   { NULL, NULL, 0, NULL }
 };
 
-#if PY_MAJOR_VERSION >= 3
 static int cups_traverse(PyObject *m, visitproc visit, void *arg) {
     Py_VISIT(GETSTATE(m)->error);
     return 0;
@@ -758,19 +747,8 @@ static struct PyModuleDef moduledef = {
 
 PyObject *
 PyInit_cups(void)
-
-#else
-#define INITERROR return
-
-void
-initcups (void)
-#endif
 {
-#if PY_MAJOR_VERSION >= 3
     PyObject *m = PyModule_Create(&moduledef);
-#else
-    PyObject *m = Py_InitModule("cups", cups_methods);
-#endif
 
   if (m == NULL)
     INITERROR;
@@ -858,7 +836,6 @@ initcups (void)
 		      (PyObject *)&cups_IPPAttributeType);
 
   // Constants
-#if PY_MAJOR_VERSION >= 3
 #  define INT_CONSTANT(name)					\
     PyDict_SetItemString (d, #name, PyLong_FromLong (name))
 #  define INT_CONSTANT_AS(name,alias)				\
@@ -866,29 +843,13 @@ initcups (void)
 #  define INT_CONSTANT_ALIAS(name,alias)			\
     PyDict_SetItemString (d, #name, PyLong_FromLong (name));	\
     PyDict_SetItemString (d, alias, PyLong_FromLong (name))
-#else
-#  define INT_CONSTANT(name)					\
-  PyDict_SetItemString (d, #name, PyInt_FromLong (name))
-#  define INT_CONSTANT_AS(name,alias)				\
-  PyDict_SetItemString (d, alias, PyInt_FromLong (name))
-#  define INT_CONSTANT_ALIAS(name,alias)				\
-  PyDict_SetItemString (d, #name, PyInt_FromLong (name));	\
-  PyDict_SetItemString (d, alias, PyInt_FromLong (name))
-#endif
 #define STR_CONSTANT(name)					\
   PyDict_SetItemString (d, #name, PyUnicode_FromString (name))
 
-#if HAVE_CUPS_1_7
 #  define INT_17_CONSTANT(newname,oldname)	\
   INT_CONSTANT_ALIAS(newname,#oldname)
 #  define INT_17_CONSTANT_NEWNAME(newname,oldname)	\
   INT_CONSTANT(newname)
-#else /* CUPS < 1.7 */
-#  define INT_17_CONSTANT(newname,oldname)	\
-  INT_CONSTANT_ALIAS(oldname,#newname)
-#  define INT_17_CONSTANT_NEWNAME(newname,oldname)	\
-  INT_CONSTANT_AS(oldname,#newname)
-#endif /* CUPS < 1.7 */
 
   // CUPS printer types
   INT_CONSTANT (CUPS_PRINTER_LOCAL);
@@ -1257,9 +1218,7 @@ initcups (void)
   Py_INCREF (IPPError);
   PyModule_AddObject (m, "IPPError", IPPError);
 
-#if PY_MAJOR_VERSION >= 3
     return m;
-#endif
 }
 
 ///////////////

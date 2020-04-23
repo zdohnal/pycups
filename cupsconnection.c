@@ -34,11 +34,7 @@
 #define _PATH_TMP P_tmpdir
 #endif
 
-#if PY_VERSION_HEX < 0x02050000
-#define DICT_POS_TYPE int
-#else
 #define DICT_POS_TYPE Py_ssize_t
-#endif
 
 PyObject *HTTPError;
 PyObject *IPPError;
@@ -64,13 +60,7 @@ set_ipp_error (ipp_status_t status, const char *message)
     message = ippErrorString (status);
 
   debugprintf("set_ipp_error: %d, %s\n", (int) status, message);
-#if PY_MAJOR_VERSION >= 3
   PyObject *v = Py_BuildValue ("(is)", status, message);
-#else
-  PyObject *v = Py_BuildValue ("(iu)", status,
-				       PyUnicode_AS_UNICODE (
-					    PyUnicode_FromString (message)));
-#endif
   if (v != NULL) {
     PyErr_SetObject (IPPError, v);
     Py_DECREF (v);
@@ -315,11 +305,7 @@ Connection_repr (Connection *self)
   char buffer[256];
   snprintf (buffer, 256, "<cups.Connection object for %s at %p>",
 			  self->host, self);
-#if PY_MAJOR_VERSION >= 3
   return PyUnicode_FromString (buffer);
-#else
-  return PyBytes_FromString (buffer);
-#endif
 }
 
 void
@@ -618,12 +604,6 @@ cups_dest_cb (void *user_data, unsigned flags, cups_dest_t *dest)
     ret = PyLong_AsLong (result);
     debugprintf ("   cups_dest_cb: cb func returned %d\n", ret);
   }
-#if PY_MAJOR_VERSION < 3
-  else if (result && PyInt_Check (result)) {
-    ret = PyInt_AsLong (result);
-    debugprintf ("   cups_dest_cb: cb func returned %d\n", ret);
-  }
-#endif
 
   debugprintf ("<- cups_dest_cb (%d)\n", ret);
 
@@ -651,11 +631,7 @@ PyObject_from_attr_value (ipp_attribute_t *attr, int i)
     break;
   case IPP_TAG_INTEGER:
   case IPP_TAG_ENUM:
-#if PY_MAJOR_VERSION >= 3
     val = PyLong_FromLong (ippGetInteger (attr, i));
-#else
-    val = PyInt_FromLong (ippGetInteger (attr, i));
-#endif
     break;
   case IPP_TAG_BOOLEAN:
     val = PyBool_FromLong (ippGetBoolean (attr, i));
@@ -779,11 +755,7 @@ Connection_getPrinters (Connection *self)
 		!strcmp (ippGetName (attr), "printer-state")) &&
 	       ippGetValueTag (attr) == IPP_TAG_ENUM) {
 	int ptype = ippGetInteger (attr, 0);
-#if PY_MAJOR_VERSION >= 3
 	val = PyLong_FromLong (ptype);
-#else
-	val = PyInt_FromLong (ptype);
-#endif
       }
       else if ((!strcmp (ippGetName (attr),
 			 "printer-make-and-model") ||
@@ -802,11 +774,7 @@ Connection_getPrinters (Connection *self)
 			"printer-is-accepting-jobs") &&
 	       ippGetValueTag (attr) == IPP_TAG_BOOLEAN) {
 	int b = ippGetBoolean (attr, 0);
-#if PY_MAJOR_VERSION >= 3
 	val = PyLong_FromLong (b);
-#else
-	val = PyInt_FromLong (b);
-#endif
       }
       else if ((!strcmp (ippGetName (attr),
 			 "printer-up-time") ||
@@ -814,11 +782,7 @@ Connection_getPrinters (Connection *self)
 			 "queued-job-count")) &&
 	       ippGetValueTag (attr) == IPP_TAG_INTEGER) {
 	int u = ippGetInteger (attr, 0);
-#if PY_MAJOR_VERSION >= 3
 	val = PyLong_FromLong (u);
-#else
-	val = PyInt_FromLong (u);
-#endif
       }
       else if ((!strcmp (ippGetName (attr), "device-uri") ||
 		!strcmp (ippGetName (attr), "printer-uri-supported")) &&
@@ -1638,11 +1602,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
 		ippGetValueTag (attr) == IPP_TAG_INTEGER) ||
 	       (!strcmp (ippGetName (attr), "job-state") &&
 		ippGetValueTag (attr) == IPP_TAG_ENUM))
-#if PY_MAJOR_VERSION >= 3
 	val = PyLong_FromLong (ippGetInteger (attr, 0));
-#else
-	val = PyInt_FromLong (ippGetInteger (attr, 0));
-#endif
       else if ((!strcmp (ippGetName (attr), "job-name") &&
 		ippGetValueTag (attr) == IPP_TAG_NAME) ||
 	       (!strcmp (ippGetName (attr), "job-originating-user-name") &&
@@ -1669,11 +1629,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
 
     if (job_id != -1) {
       debugprintf ("Adding %d to result dict\n", job_id);
-#if PY_MAJOR_VERSION >= 3
       PyObject *job_obj = PyLong_FromLong (job_id);
-#else
-      PyObject *job_obj = PyInt_FromLong (job_id);
-#endif
       PyDict_SetItem (result, job_obj, dict);
       Py_DECREF (job_obj);
     }
@@ -1956,11 +1912,7 @@ Connection_createJob (Connection *self, PyObject *args, PyObject *kwds)
   free (title);
   free (printer);
   debugprintf ("<- Connection_createJob() = %d\n", jobid);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (jobid);
-#else
-  return PyInt_FromLong (jobid);
-#endif
 }
 
 static PyObject *
@@ -2014,11 +1966,7 @@ Connection_startDocument (Connection *self, PyObject *args, PyObject *kwds)
   free (doc_name);
   free (printer);
   debugprintf ("<- Connection_startDocument() = %d\n", status);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (status);
-#else
-  return PyInt_FromLong (status);
-#endif
 }
 
 static PyObject *
@@ -2052,11 +2000,7 @@ Connection_writeRequestData (Connection *self, PyObject *args, PyObject *kwds)
 
   free (buffer);
   debugprintf ("<- Connection_writeRequestData() = %d\n", status);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (status);
-#else
-  return PyInt_FromLong (status);
-#endif
 }
 
 static PyObject *
@@ -2087,11 +2031,7 @@ Connection_finishDocument (Connection *self, PyObject *args, PyObject *kwds)
 
   free (printer);
   debugprintf ("<- Connection_finishDicument() = %d\n", answer);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (answer);
-#else
-  return PyInt_FromLong (answer);
-#endif
 }
 
 static PyObject *
@@ -2337,12 +2277,7 @@ Connection_getFile (Connection *self, PyObject *args, PyObject *kwds)
   }
 
   if (fileobj) {
-#if PY_MAJOR_VERSION >= 3
     fd = PyObject_AsFileDescriptor(fileobj);
-#else
-    FILE *f = PyFile_AsFile (fileobj);
-    fd = fileno (f);
-#endif
   }
 
   if (filename) {
@@ -2390,12 +2325,7 @@ Connection_putFile (Connection *self, PyObject *args, PyObject *kwds)
   }
 
   if (fileobj) {
-#if PY_MAJOR_VERSION >= 3
     fd = PyObject_AsFileDescriptor(fileobj);
-#else
-    FILE *f = PyFile_AsFile (fileobj);
-    fd = fileno (f);
-#endif
   }
 
   if (filename) {
@@ -3107,12 +3037,6 @@ PyObject_to_string (PyObject *pyvalue)
     long v = PyLong_AsLong (pyvalue);
     snprintf (string, sizeof (string), "%ld", v);
     value = string;
-#if PY_MAJOR_VERSION < 3
-  } else if (PyInt_Check (pyvalue)) {
-    long v = PyInt_AsLong (pyvalue);
-    snprintf (string, sizeof (string), "%ld", v);
-    value = string;
-#endif
   } else if (PyFloat_Check (pyvalue)) {
     double v = PyFloat_AsDouble (pyvalue);
     snprintf (string, sizeof (string), "%f", v);
@@ -3856,11 +3780,7 @@ Connection_getPPD3 (Connection *self, PyObject *args, PyObject *kwds)
   if (!ret)
     return NULL;
 
-#if PY_MAJOR_VERSION >= 3
   obj = PyLong_FromLong ((long) status);
-#else
-  obj = PyInt_FromLong ((long) status);
-#endif
 
   if (!obj) {
     Py_DECREF (ret);
@@ -4402,11 +4322,7 @@ Connection_createSubscription (Connection *self, PyObject *args,
 
   ippDelete (answer);
   debugprintf ("<- Connection_createSubscription() = %d\n", i);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (i);
-#else
-  return PyInt_FromLong (i);
-#endif
 }
 
 static PyObject *
@@ -4431,11 +4347,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
   num_ids = PyList_Size (subscription_ids);
   for (i = 0; i < num_ids; i++) {
     PyObject *id = PyList_GetItem (subscription_ids, i);
-#if PY_MAJOR_VERSION >= 3
     if (!PyLong_Check (id)) {
-#else
-    if (!PyInt_Check (id)) {
-#endif
       PyErr_SetString (PyExc_TypeError, "subscription_ids must be a list "
 		       "of integers");
       return NULL;
@@ -4451,11 +4363,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
     num_seqs = PyList_Size (sequence_numbers);
     for (i = 0; i < num_seqs; i++) {
       PyObject *id = PyList_GetItem (sequence_numbers, i);
-#if PY_MAJOR_VERSION >= 3
       if (!PyLong_Check (id)) {
-#else
-      if (!PyInt_Check (id)) {
-#endif
 	PyErr_SetString (PyExc_TypeError, "sequence_numbers must be a list "
 			 "of integers");
 	return NULL;
@@ -4474,11 +4382,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
 			 "notify-subscription-ids", num_ids, NULL);
   for (i = 0; i < num_ids; i++) {
     PyObject *id = PyList_GetItem (subscription_ids, i);
-#if PY_MAJOR_VERSION >= 3
     ippSetInteger (request, &attr, i, PyLong_AsLong (id));
-#else
-    ippSetInteger (request, &attr, i, PyInt_AsLong (id));
-#endif
   }
 
   if (sequence_numbers) {
@@ -4486,11 +4390,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
 			   "notify-sequence-numbers", num_seqs, NULL);
     for (i = 0; i < num_seqs; i++) {
       PyObject *num = PyList_GetItem (sequence_numbers, i);
-#if PY_MAJOR_VERSION >= 3
       ippSetInteger (request, &attr, i, PyLong_AsLong (num));
-#else
-      ippSetInteger (request, &attr, i, PyInt_AsLong (num));
-#endif
     }
   }
   
@@ -4511,22 +4411,14 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
   // Result-wide attributes.
   attr = ippFindAttribute (answer, "notify-get-interval", IPP_TAG_INTEGER);
   if (attr) {
-#if PY_MAJOR_VERSION >= 3
     PyObject *val = PyLong_FromLong (ippGetInteger (attr, 0));
-#else
-    PyObject *val = PyInt_FromLong (ippGetInteger (attr, 0));
-#endif
     PyDict_SetItemString (result, ippGetName (attr), val);
     Py_DECREF (val);
   }
 
   attr = ippFindAttribute (answer, "printer-up-time", IPP_TAG_INTEGER);
   if (attr) {
-#if PY_MAJOR_VERSION >= 3
     PyObject *val = PyLong_FromLong (ippGetInteger (attr, 0));
-#else
-    PyObject *val = PyInt_FromLong (ippGetInteger (attr, 0));
-#endif
     PyDict_SetItemString (result, ippGetName (attr), val);
     Py_DECREF (val);
   }
@@ -4736,11 +4628,7 @@ Connection_printFile (Connection *self, PyObject *args, PyObject *kwds)
   free (title);
   free (filename);
   free (printer);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (jobid);
-#else
-  return PyInt_FromLong (jobid);
-#endif
 }
 
 static void
@@ -4850,11 +4738,7 @@ Connection_printFiles (Connection *self, PyObject *args, PyObject *kwds)
   free (title);
   free_string_list (num_filenames, filenames);
   free (printer);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (jobid);
-#else
-  return PyInt_FromLong (jobid);
-#endif
 }
 
 PyMethodDef Connection_methods[] =
@@ -5711,11 +5595,7 @@ Dest_repr (Dest *self)
 			  self->instance ? "/" : "",
 			  self->instance ? self->instance : "",
 			  self->is_default ? " (default)" : "");
-#if PY_MAJOR_VERSION >= 3
   return PyUnicode_FromString (buffer);
-#else
-  return PyBytes_FromString (buffer);
-#endif
 }
 
 //////////

@@ -21,13 +21,6 @@
 #include "cupsipp.h"
 #include "cupsmodule.h"
 
-/* Compatibility code for older (pre-2.5) versions of Python */
-#if PY_VERSION_HEX < 0x02050000
-typedef int Py_ssize_t;
-#define PY_SSIZE_T_MAX INT_MAX
-#define PY_SSIZE_T_MIN INT_MIN
-#endif
-
 //////////////////
 // IPPAttribute //
 //////////////////
@@ -95,11 +88,7 @@ IPPAttribute_init (IPPAttribute *self, PyObject *args, PyObject *kwds)
       case IPP_TAG_INTEGER:
       case IPP_TAG_ENUM:
       case IPP_TAG_RANGE:
-#if PY_MAJOR_VERSION >= 3
 	valid = PyLong_Check (v);
-#else
-	valid = PyInt_Check (v);
-#endif
 	break;
 
       case IPP_TAG_BOOLEAN:
@@ -164,11 +153,7 @@ IPPAttribute_repr (IPPAttribute *self)
 	    self->name, self->group_tag, self->value_tag,
 	    values ? ": " : "",
 	    values ? values : "");
-#if PY_MAJOR_VERSION >= 3
   ret = PyUnicode_FromString (buffer);
-#else
-  ret = PyBytes_FromString (buffer);
-#endif
 
   free (values);
   Py_XDECREF (values_repr);
@@ -182,21 +167,13 @@ IPPAttribute_repr (IPPAttribute *self)
 static PyObject *
 IPPAttribute_getGroupTag (IPPAttribute *self, void *closure)
 {
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (self->group_tag);
-#else
-  return PyInt_FromLong (self->group_tag);
-#endif
 }
 
 static PyObject *
 IPPAttribute_getValueTag (IPPAttribute *self, void *closure)
 {
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (self->value_tag);
-#else
-  return PyInt_FromLong (self->value_tag);
-#endif
 }
 
 static PyObject *
@@ -354,11 +331,7 @@ build_IPPAttribute (ipp_attribute_t *attr)
       case IPP_TAG_INTEGER:
       case IPP_TAG_ENUM:
       case IPP_TAG_RANGE:
-#if PY_MAJOR_VERSION >= 3
 	value = PyLong_FromLong (ippGetInteger (attr, i));
-#else
-	value = PyInt_FromLong (ippGetInteger (attr, i));
-#endif
 	debugprintf ("i%d", ippGetInteger (attr, i));
 	break;
 
@@ -518,10 +491,6 @@ IPPRequest_add (IPPRequest *self, PyObject *args)
       PyObject *item = PyList_GetItem (attribute->values, i);
       if (PyLong_Check (item))
 	((int *)values)[i] = PyLong_AsLong (item);
-#if PY_MAJOR_VERSION < 3
-      else if (PyInt_Check (item))
-	((int *)values)[i] = PyInt_AsLong (item);
-#endif
     }
     ippAddIntegers (self->ipp,
 		    attribute->group_tag,
@@ -552,11 +521,7 @@ IPPRequest_add (IPPRequest *self, PyObject *args)
     for (i = 0; i < num_values; i++) {
       PyObject *item = PyList_GetItem (attribute->values, i);
       char *str;
-#if PY_MAJOR_VERSION >= 3
       str = strdup (PyUnicode_AsUTF8 (item));
-#else
-      str = strdup (PyBytes_AsString (item));
-#endif
       ((char **)values)[i] = str;
       if (!str)
 	break;
@@ -661,10 +626,6 @@ cupsipp_iocb_write (PyObject *callable, ipp_uchar_t *buffer, size_t len)
 
   if (PyLong_Check (result))
     wrote = PyLong_AsLong (result);
-#if PY_MAJOR_VERSION < 3
-  else if (PyInt_Check (result))
-    wrote = PyInt_AsLong (result);
-#endif
   else {
     debugprintf ("Bad return value\n");
     goto out;
@@ -697,11 +658,7 @@ IPPRequest_readIO (IPPRequest *self, PyObject *args, PyObject *kwds)
 
   state = ippReadIO (cb, (ipp_iocb_t) cupsipp_iocb_read,
 		     blocking, NULL, self->ipp);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (state);
-#else
-  return PyInt_FromLong (state);
-#endif
 }
 
 static PyObject *
@@ -723,11 +680,7 @@ IPPRequest_writeIO (IPPRequest *self, PyObject *args, PyObject *kwds)
 
   state = ippWriteIO (cb, (ipp_iocb_t) cupsipp_iocb_write,
 		     blocking, NULL, self->ipp);
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (state);
-#else
-  return PyInt_FromLong (state);
-#endif
 }
 
 /* Request properties */
@@ -757,21 +710,13 @@ IPPRequest_getAttributes (IPPRequest *self, void *closure)
 static PyObject *
 IPPRequest_getOperation (IPPRequest *self, void *closure)
 {
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (ippGetOperation (self->ipp));
-#else
-  return PyInt_FromLong (ippGetOperation (self->ipp));
-#endif
 }
 
 static PyObject *
 IPPRequest_getStatuscode (IPPRequest *self, void *closure)
 {
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (ippGetStatusCode (self->ipp));
-#else
-  return PyInt_FromLong (ippGetStatusCode (self->ipp));
-#endif
 }
 
 static int
@@ -787,10 +732,6 @@ IPPRequest_setState (IPPRequest *self, PyObject *value, void *closure)
 
   if (PyLong_Check(value))
     state = PyLong_AsLong (value);
-#if PY_MAJOR_VERSION < 3
-  else if (PyInt_Check(value))
-    state = PyInt_AsLong (value);
-#endif
   else
   {
     PyErr_SetString(PyExc_TypeError, "state must be an integer");
@@ -804,11 +745,7 @@ IPPRequest_setState (IPPRequest *self, PyObject *value, void *closure)
 static PyObject *
 IPPRequest_getState (IPPRequest *self, void *closure)
 {
-#if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong (ippGetState (self->ipp));
-#else
-  return PyInt_FromLong (ippGetState (self->ipp));
-#endif
 }
 
 static int
@@ -824,10 +761,6 @@ IPPRequest_setStatuscode (IPPRequest *self, PyObject *value, void *closure)
 
   if (PyLong_Check(value))
     statuscode = PyLong_AsLong (value);
-#if PY_MAJOR_VERSION < 3
-  else if (PyInt_Check(value))
-    statuscode = PyInt_AsLong (value);
-#endif
   else
   {
     PyErr_SetString(PyExc_TypeError, "statuscode must be an integer");
