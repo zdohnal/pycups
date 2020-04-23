@@ -582,10 +582,13 @@ cups_require (PyObject *self, PyObject *args)
 
     if (nver < nreq)
       goto fail;
+    if (nver > nreq)
+      goto good;
 
     nreq = strtoul (preq, &end, 0);
   }
 
+good:
   Py_RETURN_NONE;
 fail:
   PyErr_SetString (PyExc_RuntimeError, "I am version " VERSION);

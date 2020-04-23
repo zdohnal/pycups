@@ -3,6 +3,7 @@ NEWS
 
 New in 2.0.1:
 * pypi required .tar.gz
+* cups.require couldn't handle version bigger than 1
 
 New in 2.0.0:
 * dropped macros for older CUPS < 2.0.0
