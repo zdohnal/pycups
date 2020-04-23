@@ -1,1 +1,3 @@
 * Add cups.Connection.getNamedDest() wrapper
+* uploading to pypi does not work by 'make upload' - needed to do after archiving by 'make upload':
+$ python3 -m twine upload --repository pypi  pycups-<version>.tar.gz

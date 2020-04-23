@@ -1,7 +1,7 @@
 PYTHON=python
 NAME=pycups
 VERSION:=$(shell $(PYTHON) setup.py --version)
-SDIST_ARGS=--formats=bztar -d.
+SDIST_ARGS=--formats=gztar -d.
 RPMCONFIGDIR:=$(shell rpm -E "%{_rpmconfigdir}" 2>/dev/null || :)
 
 SOURCES=cupsmodule.c cupsconnection.c cupsppd.c cupsipp.c setup.py \

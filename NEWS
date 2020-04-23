@@ -1,6 +1,9 @@
 NEWS
 ----
 
+New in 2.0.1:
+* pypi required .tar.gz
+
 New in 2.0.0:
 * dropped macros for older CUPS < 2.0.0
 * dropped Python 2 support and its related macros
