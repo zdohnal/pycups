@@ -5,6 +5,7 @@ New in 2.0.0:
 * dropped macros for older CUPS < 2.0.0
 * dropped Python 2 support and its related macros
 * update license headers
+* thread did not hold GIL when called Py_XDECREF() from destroy_TLS(), causing SIGSEGV(Fedora bug #1816107)
 
 New in 1.9.74:
 * fix Connection_writeRequestData with binary data (https://github.com/zdohnal/pycups/pull/1)

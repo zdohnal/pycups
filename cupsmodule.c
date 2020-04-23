@@ -44,13 +44,26 @@ static pthread_once_t tls_key_once = PTHREAD_ONCE_INIT;
 // Worker functions //
 //////////////////////
 
+/*
+ * Thread local storage functions
+ */
+
 static void
 destroy_TLS (void *value)
 {
   struct TLS *tls = (struct TLS *) value;
+
+  /* CPython API needs to be run only when our process holds
+   * Python global interpret lock */
+  PyGILState_STATE gilstate;
+  gilstate = PyGILState_Ensure();
+
   Py_XDECREF (tls->cups_password_callback);
 
   Py_XDECREF (tls->cups_password_callback_context);
+
+  // release global interpret lock
+  PyGILState_Release(gilstate);
 
   free (value);
 }
