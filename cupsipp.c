@@ -285,7 +285,7 @@ IPPRequest_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int
 IPPRequest_init (IPPRequest *self, PyObject *args, PyObject *kwds)
 {
-  unsigned long op = -1;
+  long op = -1;
   if (!PyArg_ParseTuple (args, "|i", &op))
     return -1;
 
@@ -587,7 +587,13 @@ cupsipp_iocb_read (PyObject *callable, ipp_uchar_t *buffer, size_t len)
       PyBytes_AsStringAndSize (result, &gotbuffer, &got);
     }
 
-    if (got > len) {
+    if (got < 0)
+    {
+      debugprintf("No returned data.\n");
+      goto out;
+    }
+
+    if ((unsigned long)got > len) {
       debugprintf ("More data returned than requested!  Truncated...\n");
       got = len;
     }

@@ -160,7 +160,7 @@ static PyObject *
 cups_modelSort (PyObject *self, PyObject *args)
 {
   PyObject *Oa, *Ob, *a, *b;
-  int len_a, len_b;
+  long unsigned int len_a, len_b;
   size_t size_a, size_b;
   wchar_t *wca, *wcb;
 
@@ -181,7 +181,7 @@ cups_modelSort (PyObject *self, PyObject *args)
     return NULL;
   }
 
-  len_a = 1 + PyUnicode_GetSize (a);
+  len_a = 1 + (long unsigned)PyUnicode_GetLength (a);
   size_a = len_a * sizeof (wchar_t);
   if ((size_a / sizeof (wchar_t)) != len_a) {
     Py_DECREF (a);
@@ -190,7 +190,7 @@ cups_modelSort (PyObject *self, PyObject *args)
     return NULL;
   }
 
-  len_b = 1 + PyUnicode_GetSize (b);
+  len_b = 1 + (long unsigned)PyUnicode_GetLength (b);
   size_b = len_b * sizeof (wchar_t);
   if ((size_b / sizeof (wchar_t)) != len_b) {
     Py_DECREF (a);

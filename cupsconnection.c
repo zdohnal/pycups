@@ -41,7 +41,7 @@ PyObject *HTTPError;
 PyObject *IPPError;
 
 static Connection **Connections = NULL;
-static int NumConnections = 0;
+static long unsigned int NumConnections = 0;
 
 static void
 set_http_error (http_status_t status)
@@ -201,8 +201,8 @@ Connection_init (Connection *self, PyObject *args, PyObject *kwds)
   }
 
   Connection_begin_allow_threads (self);
-  debugprintf ("httpConnectEncrypt(...)\n");
-  self->http = httpConnectEncrypt (host, port, (http_encryption_t) encryption);
+  debugprintf ("httpConnect2(...)\n");
+  self->http = httpConnect2(host, port, NULL, AF_UNSPEC, cupsEncryption(), 1, 30000, NULL);
   Connection_end_allow_threads (self);
 
   if (!self->http) {
@@ -250,7 +250,7 @@ Connection_init (Connection *self, PyObject *args, PyObject *kwds)
 static void
 Connection_dealloc (Connection *self)
 {
-  int i, j;
+  long unsigned int i, j;
 
   for (j = 0; j < NumConnections; j++)
     if (Connections[j] == self)
@@ -344,7 +344,7 @@ password_callback (int newstyle,
   Connection *self = NULL;
   PyObject *args;
   PyObject *result;
-  int i;
+  long unsigned int i;
 
   debugprintf ("-> password_callback for http=%p, newstyle=%d\n",
 	       http, newstyle);
@@ -1463,7 +1463,7 @@ Connection_getDevices (Connection *self, PyObject *args, PyObject *kwds)
 static int
 get_requested_attrs (PyObject *requested_attrs, size_t *n_attrs, char ***attrs)
 {
-  int i;
+  long unsigned int i;
   size_t n;
   char **as;
 
@@ -1500,7 +1500,7 @@ get_requested_attrs (PyObject *requested_attrs, size_t *n_attrs, char ***attrs)
 static void
 free_requested_attrs (size_t n_attrs, char **attrs)
 {
-  int i;
+  long unsigned int i;
   for (i = 0; i < n_attrs; i++)
     free (attrs[i]);
   free (attrs);
@@ -2112,9 +2112,9 @@ Connection_authenticateJob (Connection *self, PyObject *args)
   ipp_t *request, *answer;
   int job_id;
   PyObject *auth_info_list = NULL;
-  int num_auth_info = 0; /* initialised to calm compiler */
+  long unsigned int num_auth_info = 0; /* initialised to calm compiler */
   char *auth_info_values[3];
-  int i;
+  long unsigned int i;
   char uri[1024];
 
   if (!PyArg_ParseTuple (args, "i|O", &job_id, &auth_info_list))
@@ -3055,7 +3055,7 @@ Connection_addPrinterOptionDefault (Connection *self, PyObject *args)
   PyObject *optionobj;
   char *option;
   PyObject *pyvalue;
-  const char const suffix[] = "-default";
+  const char suffix[] = "-default";
   char *opt;
   ipp_t *request, *answer;
   int i;
@@ -3130,7 +3130,7 @@ Connection_deletePrinterOptionDefault (Connection *self, PyObject *args)
   char *name;
   PyObject *optionobj;
   char *option;
-  const char const suffix[] = "-default";
+  const char suffix[] = "-default";
   char *opt;
   ipp_t *request, *answer;
   int i;
