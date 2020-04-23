@@ -36,7 +36,7 @@ EPSON-Stylus-D78 usb://EPSON/Stylus%20D78
 
 from distutils.core import setup, Extension
 import sys
-VERSION="1.9.74"
+VERSION="2.0.0"
 libraries=["cups"]
 
 if sys.platform == "darwin" or sys.platform.startswith("freebsd"):
