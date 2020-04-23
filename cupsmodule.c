@@ -37,24 +37,7 @@
 static pthread_key_t tls_key = -1;
 static pthread_once_t tls_key_once = PTHREAD_ONCE_INIT;
 
-#if CUPS_VERSION_MAJOR > 1 || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 3)
-# define CUPS_PRINTER_DISCOVERED	0x1000000
-# define CUPS_SERVER_REMOTE_ANY		"_remote_any"
-#endif /* CUPS < 1.3 */
-
-#if CUPS_VERSION_MAJOR < 1 || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 4)
-# define HTTP_AUTHORIZATION_CANCELED	1000
-#endif /* CUPS < 1.4 */
-
-#if CUPS_VERSION_MAJOR < 1 || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR < 5)
-# define HTTP_PKI_ERROR			1001
-# define IPP_AUTHENTICATION_CANCELED	0x1000
-# define IPP_PKI_ERROR			0x1001
-#endif /* CUPS < 1.5 */
-
-#if HAVE_CUPS_1_6
 # define CUPS_SERVER_REMOTE_PRINTERS	"_remote_printers"
-#endif /* CUPS > 1.6 */
 
 //////////////////////
 // Worker functions //
@@ -66,9 +49,7 @@ destroy_TLS (void *value)
   struct TLS *tls = (struct TLS *) value;
   Py_XDECREF (tls->cups_password_callback);
 
-#if HAVE_CUPS_1_4
   Py_XDECREF (tls->cups_password_callback_context);
-#endif /* HAVE_CUPS_1_4 */
 
   free (value);
 }
@@ -156,210 +137,6 @@ do_model_compare (const wchar_t *a, const wchar_t *b)
 
   return 1;
 }
-
-#ifndef HAVE_CUPS_1_4
-static const char *
-do_password_callback (const char *prompt)
-{
-  struct TLS *tls = get_TLS ();
-  static char *password;
-
-  PyObject *args;
-  PyObject *result;
-  const char *pwval;
-
-  debugprintf ("-> do_password_callback\n");
-  Connection_end_allow_threads (tls->g_current_connection);
-  args = Py_BuildValue ("(s)", prompt);
-  result = PyEval_CallObject (tls->cups_password_callback, args);
-  Py_DECREF (args);
-  if (result == NULL)
-  {
-    debugprintf ("<- do_password_callback (exception)\n");
-    Connection_begin_allow_threads (tls->g_current_connection);
-    return NULL;
-  }
-
-  if (password) {
-    free (password);
-    password = NULL;
-  }
-
-  if (result == Py_None)
-    password = NULL;
-  else
-  {
-    pwval = PyBytes_AsString (result);
-    password = strdup (pwval);
-  }
-
-  Py_DECREF (result);
-  if (!password || !*password)
-  {
-    debugprintf ("<- do_password_callback (empty/null)\n");
-    Connection_begin_allow_threads (tls->g_current_connection);
-    return NULL;
-  }
-
-  Connection_begin_allow_threads (tls->g_current_connection);
-  debugprintf ("<- do_password_callback\n");
-  return password;
-}
-#endif /* !HAVE_CUPS_1_4 */
-
-#ifndef HAVE_CUPS_1_6
-int
-ippGetBoolean(ipp_attribute_t *attr,
-              int             element)
-{
-  return (attr->values[element].boolean);
-}
-
-int
-ippGetCount(ipp_attribute_t *attr)
-{
-  return (attr->num_values);
-}
-
-ipp_tag_t
-ippGetGroupTag(ipp_attribute_t *attr)
-{
-  return (attr->group_tag);
-}
-
-int
-ippGetInteger(ipp_attribute_t *attr,
-              int             element)
-{
-  return (attr->values[element].integer);
-}
-
-const char *
-ippGetName(ipp_attribute_t *attr)
-{
-  return (attr->name);
-}
-
-ipp_op_t
-ippGetOperation(ipp_t *ipp)
-{
-  return (ipp->request.op.operation_id);
-}
-
-int
-ippGetRange(ipp_attribute_t *attr,
-	    int             element,
-	    int             *uppervalue)
-{
-  if (uppervalue)
-    *uppervalue = attr->values[element].range.upper;
-
-  return (attr->values[element].range.lower);
-}
-
-int
-ippGetResolution(
-    ipp_attribute_t *attr,
-    int             element,
-    int             *yres,
-    ipp_res_t       *units)
-{
-  if (yres)
-    *yres = attr->values[element].resolution.yres;
-
-  if (units)
-    *units = attr->values[element].resolution.units;
-
-  return (attr->values[element].resolution.xres);
-}
-
-ipp_state_t
-ippGetState(ipp_t *ipp)
-{
-  return (ipp->state);
-}
-
-ipp_status_t
-ippGetStatusCode(ipp_t *ipp)
-{
-  return (ipp->request.status.status_code);
-}
-
-const char *
-ippGetString(ipp_attribute_t *attr,
-             int             element,
-             const char      **language)
-{
-  return (attr->values[element].string.text);
-}
-
-ipp_tag_t
-ippGetValueTag(ipp_attribute_t *attr)
-{
-  return (attr->value_tag);
-}
-
-ipp_attribute_t	*
-ippFirstAttribute(ipp_t *ipp)
-{
-  if (!ipp)
-    return (NULL);
-  return (ipp->current = ipp->attrs);
-}
-
-ipp_attribute_t *
-ippNextAttribute(ipp_t *ipp)
-{
-  if (!ipp || !ipp->current)
-    return (NULL);
-  return (ipp->current = ipp->current->next);
-}
-
-int
-ippSetInteger(ipp_t           *ipp,
-              ipp_attribute_t **attr,
-              int             element,
-              int             intvalue)
-{
-  (*attr)->values[element].integer = intvalue;
-  return (1);
-}
-
-int
-ippSetOperation(ipp_t    *ipp,
-                ipp_op_t op)
-{
-  ipp->request.op.operation_id = op;
-  return (1);
-}
-
-int
-ippSetState(ipp_t       *ipp,
-	    ipp_state_t state)
-{
-  ipp->state = state;
-  return (1);
-}
-
-int
-ippSetStatusCode(ipp_t        *ipp,
-		 ipp_status_t status)
-{
-  ipp->request.status.status_code = status;
-  return (1);
-}
-
-int
-ippSetString(ipp_t           *ipp,
-             ipp_attribute_t **attr,
-             int             element,
-             const char      *strvalue)
-{
-  (*attr)->values[element].string.text = (char *) strvalue;
-  return (1);
-}
-
-#endif
 
 //////////////////////////
 // Module-level methods //
@@ -526,26 +303,19 @@ cups_setPasswordCB (PyObject *self, PyObject *args)
   }
 
   debugprintf ("-> cups_setPasswordCB\n");
-#ifdef HAVE_CUPS_1_4
   Py_XDECREF (tls->cups_password_callback_context);
   tls->cups_password_callback_context = NULL;
-#endif /* HAVE_CUPS_1_4 */
 
   Py_XINCREF (cb);
   Py_XDECREF (tls->cups_password_callback);
   tls->cups_password_callback = cb;
 
-#ifdef HAVE_CUPS_1_4
   cupsSetPasswordCB2 (password_callback_oldstyle, NULL);
-#else
-  cupsSetPasswordCB (do_password_callback);
-#endif
 
   debugprintf ("<- cups_setPasswordCB\n");
   Py_RETURN_NONE;
 }
 
-#ifdef HAVE_CUPS_1_4
 static PyObject *
 cups_setPasswordCB2 (PyObject *self, PyObject *args)
 {
@@ -588,7 +358,6 @@ cups_setPasswordCB2 (PyObject *self, PyObject *args)
   debugprintf ("<- cups_setPasswordCB2\n");
   Py_RETURN_NONE;
 }
-#endif /* HAVE_CUPS_1_4 */
 
 static PyObject *
 cups_ppdSetConformance (PyObject *self, PyObject *args)
@@ -601,7 +370,6 @@ cups_ppdSetConformance (PyObject *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-#ifdef HAVE_CUPS_1_6
 static PyObject *
 cups_enumDests (PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -659,9 +427,7 @@ cups_enumDests (PyObject *self, PyObject *args, PyObject *kwds)
 
   Py_RETURN_NONE;
 }
-#endif /* HAVE_CUPS_1_6 */
 
-#ifdef HAVE_CUPS_1_6
 static PyObject *
 cups_connectDest (PyObject *self, PyObject *args, PyObject *kwds)
 {
@@ -752,7 +518,6 @@ cups_connectDest (PyObject *self, PyObject *args, PyObject *kwds)
   ret = Py_BuildValue ("(Os)", (PyObject *) connobj, resource);
   return ret;
 }
-#endif /* HAVE_CUPS_1_6 */
 
 static PyObject *
 cups_ippErrorString (PyObject *self, PyObject *args)
@@ -891,7 +656,6 @@ static PyMethodDef cups_methods[] = {
     "@type fn: callable object\n"
     "@param fn: callback function" },
 
-#ifdef HAVE_CUPS_1_4
   { "setPasswordCB2", cups_setPasswordCB2, METH_VARARGS,
     "setPasswordCB2(fn, context=None) -> None\n\n"
     "Set password callback function.  This Python function will be called \n"
@@ -902,7 +666,6 @@ static PyMethodDef cups_methods[] = {
     "to abort the operation.\n\n"
     "@type fn: callable object, or None for default handler\n"
     "@param fn: callback function" },
-#endif /* HAVE_CUPS_1_4 */
 
   { "ppdSetConformance", cups_ppdSetConformance, METH_VARARGS,
     "ppdSetConformance(level) -> None\n\n"
@@ -910,7 +673,6 @@ static PyMethodDef cups_methods[] = {
     "@type level: integer\n"
     "@param level: PPD_CONFORM_RELAXED or PPD_CONFORM_STRICT" },
 
-#ifdef HAVE_CUPS_1_6
   { "enumDests",
     (PyCFunction) cups_enumDests, METH_VARARGS | METH_KEYWORDS,
     "enumDests(cb,flags=0,msec=-1,type=0,mask=0,user_data=None) -> None\n\n"
@@ -927,9 +689,7 @@ static PyMethodDef cups_methods[] = {
     "@param mask: bitmask of type bits to examine\n"
     "@type user_data: object\n"
     "@param user_data: user data to pass to callback function\n"},
-#endif /* HAVE_CUPS_1_6 */
 
-#ifdef HAVE_CUPS_1_6
   { "connectDest",
     (PyCFunction) cups_connectDest, METH_VARARGS | METH_KEYWORDS,
     "connectDest(dest,cb,flags=0,msec=-1,user_data=None) -> (conn, resource)\n\n"
@@ -945,7 +705,6 @@ static PyMethodDef cups_methods[] = {
     "@type user_data: object\n"
     "@param user_data: user data to pass to callback function\n"
     "@return: a 2-tuple of the Connection object and the HTTP resource.\n"},
-#endif /* HAVE_CUPS_1_6 */
 
   { "ippErrorString",
     (PyCFunction) cups_ippErrorString, METH_VARARGS,
@@ -1176,13 +935,8 @@ initcups (void)
 
   // Selected HTTP status codes
   /* Also define legacy names */
-#if HAVE_CUPS_1_7
 #  define INT_HTTP_STATUS_CONSTANT(name)		\
   INT_CONSTANT_ALIAS(HTTP_STATUS_##name, "HTTP_"#name)
-#else /* CUPS < 1.7 */
-#  define INT_HTTP_STATUS_CONSTANT(name)		\
-  INT_CONSTANT_ALIAS(HTTP_##name, "HTTP_STATUS_"#name)
-#endif /* CUPS < 1.7 */
 
   INT_HTTP_STATUS_CONSTANT (ERROR);
   INT_HTTP_STATUS_CONSTANT (OK);
@@ -1266,13 +1020,8 @@ initcups (void)
 
   // IPP orientations
   /* Also define legacy names */
-#if HAVE_CUPS_1_7
 #  define INT_IPP_ORIENT_CONSTANT(name)	\
   INT_CONSTANT_ALIAS(IPP_ORIENT_##name, "IPP_"#name)
-#else /* CUPS < 1.7 */
-#  define INT_IPP_ORIENT_CONSTANT(name)		\
-  INT_CONSTANT_ALIAS(IPP_##name, "IPP_ORIENT_"#name)
-#endif /* CUPS < 1.7 */
 
   INT_IPP_ORIENT_CONSTANT (PORTRAIT);
   INT_IPP_ORIENT_CONSTANT (LANDSCAPE);
@@ -1286,17 +1035,10 @@ initcups (void)
 
   // IPP errors
   /* Also define legacy names */
-#if HAVE_CUPS_1_7
 #  define INT_IPP_STATUS_ERROR_CONSTANT(name)	\
   INT_CONSTANT_ALIAS(IPP_STATUS_ERROR_##name, "IPP_"#name)
 #  define INT_IPP_STATUS_OK_CONSTANT(name)	\
   INT_CONSTANT_ALIAS(IPP_STATUS_##name, "IPP_"#name)
-#else /* CUPS < 1.7 */
-#  define INT_IPP_STATUS_ERROR_CONSTANT(name)	\
-  INT_CONSTANT_ALIAS(IPP_##name, "IPP_STATUS_ERROR_"#name)
-#  define INT_IPP_STATUS_OK_CONSTANT(name)	\
-  INT_CONSTANT_ALIAS(IPP_##name, "IPP_STATUS_"#name)
-#endif /* CUPS < 1.7 */
 
   INT_IPP_STATUS_OK_CONSTANT (OK);
   INT_17_CONSTANT (IPP_STATUS_OK_IGNORED_OR_SUBSTITUTED, IPP_OK_SUBST);
@@ -1347,20 +1089,13 @@ initcups (void)
   INT_17_CONSTANT (IPP_STATUS_ERROR_CUPS_AUTHENTICATION_CANCELED,
 		   IPP_AUTHENTICATION_CANCELED);
   INT_17_CONSTANT (IPP_STATUS_ERROR_CUPS_PKI, IPP_PKI_ERROR);
-#if HAVE_CUPS_1_5
   INT_17_CONSTANT (IPP_STATUS_ERROR_CUPS_UPGRADE_REQUIRED,
 		   IPP_UPGRADE_REQUIRED);
-#endif /* CUPS >= 1.5 */
 
   // IPP states
   /* Also define legacy names */
-#if HAVE_CUPS_1_7
 #  define INT_IPP_STATE_CONSTANT(name)	\
   INT_CONSTANT_ALIAS(IPP_STATE_##name, "IPP_"#name)
-#else /* CUPS < 1.7 */
-#  define INT_IPP_STATE_CONSTANT(name)		\
-  INT_CONSTANT_ALIAS(IPP_##name, "IPP_STATE_"#name)
-#endif /* CUPS < 1.7 */
 
   INT_IPP_STATE_CONSTANT (ERROR);
   INT_IPP_STATE_CONSTANT (IDLE);
@@ -1387,13 +1122,8 @@ initcups (void)
   INT_CONSTANT (IPP_TAG_MIMETYPE);
 
   // IPP operations
-#if HAVE_CUPS_1_7
 #  define INT_IPP_OP_CONSTANT(name)		\
   INT_CONSTANT(IPP_OP_##name)
-#else /* CUPS < 1.7 */
-#  define INT_IPP_OP_CONSTANT(name)					\
-  INT_CONSTANT_AS(IPP_##name, "IPP_OP_"#name)
-#endif /* CUPS < 1.7 */
 
   INT_IPP_OP_CONSTANT (PRINT_JOB);
   INT_IPP_OP_CONSTANT (PRINT_URI);
@@ -1423,11 +1153,9 @@ initcups (void)
   INT_IPP_OP_CONSTANT (CANCEL_SUBSCRIPTION);
   INT_IPP_OP_CONSTANT (GET_NOTIFICATIONS);
   INT_IPP_OP_CONSTANT (SEND_NOTIFICATIONS);
-#if HAVE_CUPS_1_6
   INT_IPP_OP_CONSTANT (GET_RESOURCE_ATTRIBUTES);
   INT_IPP_OP_CONSTANT (GET_RESOURCE_DATA);
   INT_IPP_OP_CONSTANT (GET_RESOURCES);
-#endif /* CUPS >= 1.6 */
   INT_IPP_OP_CONSTANT (GET_PRINT_SUPPORT_FILES);
   INT_IPP_OP_CONSTANT (ENABLE_PRINTER);
   INT_IPP_OP_CONSTANT (DISABLE_PRINTER);
@@ -1445,17 +1173,13 @@ initcups (void)
   INT_IPP_OP_CONSTANT (RESUME_JOB);
   INT_IPP_OP_CONSTANT (PROMOTE_JOB);
   INT_IPP_OP_CONSTANT (SCHEDULE_JOB_AFTER);
-#if HAVE_CUPS_1_6
   INT_IPP_OP_CONSTANT (CANCEL_JOBS);
   INT_IPP_OP_CONSTANT (CANCEL_MY_JOBS);
   INT_IPP_OP_CONSTANT (RESUBMIT_JOB);
   INT_IPP_OP_CONSTANT (CLOSE_JOB);
   INT_IPP_OP_CONSTANT (IDENTIFY_PRINTER);
   INT_IPP_OP_CONSTANT (VALIDATE_DOCUMENT);
-#endif /* CUPS >= 1.6 */
-#if HAVE_CUPS_1_7
   INT_IPP_OP_CONSTANT (SEND_HARDCOPY_DOCUMENT);
-#endif /* CUPS >= 1.7 */
   INT_17_CONSTANT_NEWNAME (IPP_OP_CUPS_GET_DEFAULT, CUPS_GET_DEFAULT);
   INT_17_CONSTANT_NEWNAME (IPP_OP_CUPS_GET_PRINTERS, CUPS_GET_PRINTERS);
   INT_17_CONSTANT_NEWNAME (IPP_OP_CUPS_ADD_MODIFY_PRINTER,
@@ -1488,7 +1212,6 @@ initcups (void)
   STR_CONSTANT (CUPS_SERVER_USER_CANCEL_ANY);
   STR_CONSTANT (CUPS_SERVER_REMOTE_ANY);
 
-#ifdef HAVE_CUPS_1_6
   // Dest enumeration flags
   INT_CONSTANT (CUPS_DEST_FLAGS_NONE);
   INT_CONSTANT (CUPS_DEST_FLAGS_UNCONNECTED);
@@ -1498,7 +1221,6 @@ initcups (void)
   INT_CONSTANT (CUPS_DEST_FLAGS_RESOLVING);
   INT_CONSTANT (CUPS_DEST_FLAGS_CONNECTING);
   INT_CONSTANT (CUPS_DEST_FLAGS_CANCELED);
-#endif /* HAVE_CUPS_1_6 */
 
   // Exceptions
   obj = PyDict_New ();

@@ -1,6 +1,9 @@
 NEWS
 ----
 
+New in 2.0.0:
+* dropped macros for older CUPS < 2.0.0
+
 New in 1.9.74:
 * fix Connection_writeRequestData with binary data (https://github.com/zdohnal/pycups/pull/1)
 * misspelling (patch by Edward Betts)

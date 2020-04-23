@@ -184,9 +184,7 @@ Connection_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
     self->http = NULL;
     self->host = NULL;
     self->tstate = NULL;
-#ifdef HAVE_CUPS_1_4
     self->cb_password = NULL;
-#endif /* HAVE_CUPS_1_4 */
   }
 
   return (PyObject *) self;
@@ -305,9 +303,7 @@ Connection_dealloc (Connection *self)
     debugprintf ("httpClose()\n");
     httpClose (self->http);
     free (self->host);
-#ifdef HAVE_CUPS_1_4
     free (self->cb_password);
-#endif /* HAVE_CUPS_1_4 */
   }
 
   ((PyObject *)self)->ob_type->tp_free ((PyObject *) self);
@@ -329,15 +325,8 @@ Connection_repr (Connection *self)
 void
 Connection_begin_allow_threads (void *connection)
 {
-#ifndef HAVE_CUPS_1_4
-  struct TLS *tls = get_TLS ();
-#endif /* !HAVE_CUPS_1_4 */
   Connection *self = (Connection *) connection;
   debugprintf ("begin allow threads\n");
-
-#ifndef HAVE_CUPS_1_4
-  tls->g_current_connection = connection;
-#endif /* !HAVE_CUPS_1_4 */
 
   self->tstate = PyEval_SaveThread ();
 }
@@ -355,7 +344,6 @@ Connection_end_allow_threads (void *connection)
 // Connection // METHODS
 ////////////////
 
-#ifdef HAVE_CUPS_1_4
 static const char *
 password_callback (int newstyle,
 		   const char *prompt,
@@ -445,7 +433,6 @@ password_callback_newstyle (const char *prompt,
 {
   return password_callback (1, prompt, http, method, resource, user_data);
 }
-#endif /* !HAVE_CUPS_1_4 */
 
 static PyObject *
 do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
@@ -596,7 +583,6 @@ Connection_getDests (Connection *self)
   return pydests;
 }
 
-#ifdef HAVE_CUPS_1_6
 int
 cups_dest_cb (void *user_data, unsigned flags, cups_dest_t *dest)
 {
@@ -643,7 +629,6 @@ cups_dest_cb (void *user_data, unsigned flags, cups_dest_t *dest)
 
   return ret;
 }
-#endif /* HAVE_CUPS_1_6 */
 
 static PyObject *
 PyObject_from_attr_value (ipp_attribute_t *attr, int i)
@@ -1238,7 +1223,6 @@ Connection_getPPDs2 (Connection *self, PyObject *args, PyObject *kwds)
 static PyObject *
 Connection_getServerPPD (Connection *self, PyObject *args)
 {
-#if CUPS_VERSION_MAJOR > 1 || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR >= 3)
   const char *ppd_name, *filename;
   if (!PyArg_ParseTuple (args, "s", &ppd_name))
     return NULL;
@@ -1254,17 +1238,11 @@ Connection_getServerPPD (Connection *self, PyObject *args)
   debugprintf ("<- Connection_getServerPPD(\"%s\") = \"%s\"\n",
 	       ppd_name, filename);
   return PyUnicode_FromString (filename);
-#else /* earlier than CUPS 1.3 */
-  PyErr_SetString (PyExc_RuntimeError,
-		   "Operation not supported - recompile against CUPS 1.3 or later");
-  return NULL;
-#endif /* CUPS 1.3 */
 }
 
 static PyObject *
 Connection_getDocument (Connection *self, PyObject *args)
 {
-#if CUPS_VERSION_MAJOR > 1 || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR >= 4)
   PyObject *dict;
   PyObject *obj;
   PyObject *uriobj;
@@ -1348,11 +1326,6 @@ Connection_getDocument (Connection *self, PyObject *args)
 	       name ? name : "(nul)");
   ippDelete (answer);
   return dict;
-#else /* earlier than CUPS 1.4 */
-  PyErr_SetString (PyExc_RuntimeError,
-		   "Operation not supported - recompile against CUPS 1.4 or later");
-  return NULL;
-#endif /* CUPS 1.4 */
 }
 
 static PyObject *
@@ -3822,7 +3795,6 @@ Connection_getPPD (Connection *self, PyObject *args)
   return ret;
 }
 
-#ifdef HAVE_CUPS_1_4
 static PyObject *
 Connection_getPPD3 (Connection *self, PyObject *args, PyObject *kwds)
 {
@@ -3917,7 +3889,6 @@ Connection_getPPD3 (Connection *self, PyObject *args, PyObject *kwds)
 	       status, modtime, fname);
   return ret;
 }
-#endif /* HAVE_CUPS_1_4 */
 
 static PyObject *
 Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
@@ -5388,7 +5359,6 @@ PyMethodDef Connection_methods[] =
       "@return: temporary PPD file name\n"
       "@raise IPPError: IPP problem" },
 
-#ifdef HAVE_CUPS_1_4
     { "getPPD3",
       (PyCFunction) Connection_getPPD3, METH_VARARGS | METH_KEYWORDS,
       "getPPD3(name[, modtime, filename]) -> (status,modtime,filename)\n\n"
@@ -5400,7 +5370,6 @@ PyMethodDef Connection_methods[] =
       "@type filename: string\n"
       "@param filename: filename of existing file\n"
       "@return: tuple of HTTP status, modification time, and filename\n" },
-#endif /* HAVE_CUPS_1_4 */
 
     { "enablePrinter",
       (PyCFunction) Connection_enablePrinter, METH_VARARGS | METH_KEYWORDS,

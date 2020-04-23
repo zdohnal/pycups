@@ -34,9 +34,7 @@ typedef struct
   PyObject_HEAD
   http_t *http;
   char *host; /* for repr */
-#ifdef HAVE_CUPS_1_4
   char *cb_password;
-#endif /* HAVE_CUPS_1_4 */
   PyThreadState *tstate;
 } Connection;
 
@@ -69,11 +67,9 @@ const char *password_callback_oldstyle (const char *prompt,
 					const char *method,
 					const char *resource,
 					void *user_data);
-#ifdef HAVE_CUPS_1_6
 int cups_dest_cb (void *user_data,
 		  unsigned flags,
 		  cups_dest_t *dest);
-#endif /* HAVE_CUPS_1_6 */
 
 void set_ipp_error (ipp_status_t status,
 		    const char *message);

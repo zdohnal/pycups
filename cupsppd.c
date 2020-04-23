@@ -313,7 +313,6 @@ PPD_localizeIPPReason (PPD *self, PyObject *args, PyObject *kwds)
 static PyObject *
 PPD_localizeMarkerName (PPD *self, PyObject *args)
 {
-#if CUPS_VERSION_MAJOR > 1 || (CUPS_VERSION_MAJOR == 1 && CUPS_VERSION_MINOR >= 4)
   PyObject *ret;
   PyObject *nameobj;
   char *name;
@@ -336,11 +335,6 @@ PPD_localizeMarkerName (PPD *self, PyObject *args)
   }
 
   return ret;
-#else /* earlier than CUPS 1.4 */
-  PyErr_SetString (PyExc_RuntimeError,
-		   "Operation not supported - recompile against CUPS 1.4 or later");
-  return NULL;
-#endif /* CUPS 1.4 */
 }
 
 static PyObject *
