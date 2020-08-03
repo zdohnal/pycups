@@ -5,6 +5,8 @@ These Python bindings are intended to wrap the CUPS API.
 
 Python 3 or later is required since Python 2 is unsupported since 2020-01-01.
 
+CUPS >= 1.7 is required for the latest pycups version. 
+
 Build dependencies
 ------------------
 
