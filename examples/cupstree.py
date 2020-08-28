@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import cups
 
 def do_indent (indent):
