@@ -243,7 +243,8 @@ class TagBuilder:
         self.ids = DeviceIDs ()
 
         for path in paths:
-            if path.find ("/usr/lib/cups/driver/") != -1:
+            if path.find ("/usr/lib/cups/driver/") != -1 and \
+               path.find("driverless") == -1:
                 try:
                     self.ids += DynamicDriver (path).list ()
                 except TimedOut:
