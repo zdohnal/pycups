@@ -4,6 +4,8 @@ NEWS
 New in 2.0.2:
 - removed shebang from example/cupstree.py
 - ignore driverless utilities for postscriptdriver tags creation (Fedora bug #1873385)
+- remove epydoc from Makefile (#27)
+- fix invalid delete of pointer (#11)
 
 New in 2.0.1:
 * pypi required .tar.gz
