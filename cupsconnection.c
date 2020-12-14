@@ -3923,6 +3923,7 @@ Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
     Connection_end_allow_threads (self);
     if (answer && ippGetStatusCode (answer) == IPP_NOT_POSSIBLE) {
       ippDelete (answer);
+      answer = NULL;
       // Perhaps it's a class, not a printer.
       construct_uri (uri, sizeof (uri),
 		     "ipp://localhost/classes/", printer);
