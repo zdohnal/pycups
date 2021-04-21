@@ -1,4 +1,4 @@
-PYTHON=python
+PYTHON=python3
 NAME=pycups
 VERSION:=$(shell $(PYTHON) setup.py --version)
 SDIST_ARGS=--formats=gztar -d.
