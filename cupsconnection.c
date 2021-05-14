@@ -4714,7 +4714,7 @@ Connection_printFiles (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     num_settings = cupsAddOption (UTF8_from_PyObj (&name, key),
-				  UTF8_from_PyObj (&value, key),
+				  UTF8_from_PyObj (&value, val),
 				  num_settings,
 				  &settings);
     free (name);
