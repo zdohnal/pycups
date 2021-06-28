@@ -21,6 +21,8 @@
 #ifndef HAVE_CUPSIPP_H
 #define HAVE_CUPSIPP_H
 
+#define PY_SSIZE_T_CLEAN
+
 #include <Python.h>
 #include <cups/ipp.h>
 

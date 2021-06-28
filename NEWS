@@ -7,6 +7,8 @@ New in 2.0.2:
 - remove epydoc from Makefile (#27)
 - fix invalid delete of pointer (#11)
 - Makefile uses wrong Python (#32)
+- define PY_SSIZE_T_CLEAN in cupsipp.h - fixes traceback during IPPRequest.writeIO
+  with Python 3.10
 
 New in 2.0.1:
 * pypi required .tar.gz
