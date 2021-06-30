@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
+ m; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <regex.h>
 #include <unistd.h>
 
 #ifndef _PATH_TMP
@@ -36,6 +37,9 @@
 #endif
 
 #define DICT_POS_TYPE Py_ssize_t
+
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
 PyObject *HTTPError;
 PyObject *IPPError;
@@ -1512,25 +1516,61 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *result;
   ipp_t *request, *answer;
   ipp_attribute_t *attr;
+  int    status;
+  regex_t    re;
+  char *name = NULL;
   char *which = NULL;
+  char uri[1024];
   int my_jobs = 0;
   int limit = -1;
   int first_job_id = -1;
   PyObject *requested_attrs = NULL;
   char **attrs = NULL; /* initialised to calm compiler */
   size_t n_attrs = 0; /* initialised to calm compiler */
-  static char *kwlist[] = { "which_jobs", "my_jobs", "limit", "first_job_id", 
+  static char *kwlist[] = { "name", "which_jobs", "my_jobs", "limit", "first_job_id", 
 			    "requested_attributes", NULL };
-  if (!PyArg_ParseTupleAndKeywords (args, kwds, "|siiiO", kwlist,
-				    &which, &my_jobs, &limit, &first_job_id,
+  if (!PyArg_ParseTupleAndKeywords (args, kwds, "|ssiiiO", kwlist,
+				    &name, &which, &my_jobs, &limit, &first_job_id,
 				    &requested_attrs))
     return NULL;
 
   debugprintf ("-> Connection_getJobs(%s,%d)\n",
 	       which ? which : "(null)", my_jobs);
   request = ippNewRequest(IPP_GET_JOBS);
+
+  if (name == NULL) {
+    name = "";
+  } else {
+    
+    if (regcomp(&re, "[A-Za-z0-9\\-\\.\\_\\~]+", REG_EXTENDED|REG_NOSUB) != 0) {
+      return NULL;
+    }
+    
+    status = regexec(&re, name, (size_t) 0, NULL, 0);
+    regfree(&re);
+    
+    if (status != 0) {
+      PyErr_SetString (PyExc_RuntimeError, "valid name must be specified");
+      return NULL;
+    }
+  }
+
+  
+
+  int name_len = strlen(name);
+  int full_url_length = strlen(uri) + name_len;
+
+  if (full_url_length > HTTP_MAX_URI) {
+    debugprintf("name too long, cutting it");
+
+    int number_to_trim = MIN(full_url_length - HTTP_MAX_URI, name_len);
+    name[name_len - number_to_trim] = 0;
+  }
+
+  snprintf (uri, sizeof (uri), "ipp://localhost/printers/%s", name);
+
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-		NULL, "ipp://localhost/printers/");
+		NULL, uri);
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD, "which-jobs",
 		NULL, which ? which : "not-completed");
